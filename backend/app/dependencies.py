@@ -2,8 +2,8 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 
-from backend.app.db import SessionLocal
-from backend.app import models, crud
+from app.db import SessionLocal
+from app import models, crud
 
 oauth2_scheme = HTTPBearer()
 

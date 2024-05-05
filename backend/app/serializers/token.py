@@ -1,5 +1,5 @@
-from backend.app.models import token as db_model_token
-from backend.app import schemas
+from app.models import token as db_model_token
+from app import schemas
 from .user import get_user
 
 

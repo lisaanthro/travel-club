@@ -1,8 +1,8 @@
-from backend.app.db import BaseSqlModel
-
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer, Float, DateTime
 from datetime import datetime
+
+from app.db import BaseSqlModel
 
 
 class Transaction(BaseSqlModel):

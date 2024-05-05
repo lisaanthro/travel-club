@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from backend.app import models, schemas, errors
+from app import models, schemas, errors
 from .token import read_token
 
 

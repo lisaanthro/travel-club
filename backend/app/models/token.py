@@ -1,7 +1,8 @@
 from sqlalchemy import String, Integer, Boolean, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.app.db import BaseSqlModel
-from backend.app.models import User
+
+from app.db import BaseSqlModel
+from app.models import User
 
 
 class Token(BaseSqlModel):

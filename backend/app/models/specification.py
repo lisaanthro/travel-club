@@ -1,7 +1,7 @@
-from backend.app.db import BaseSqlModel
-
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer, String, JSON
+
+from app.db import BaseSqlModel
 
 
 class Specification(BaseSqlModel):

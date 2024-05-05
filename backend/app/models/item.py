@@ -1,7 +1,7 @@
-from backend.app.db import BaseSqlModel
-
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Integer, JSON, Float
+
+from app.db import BaseSqlModel
 
 
 class Item(BaseSqlModel):
