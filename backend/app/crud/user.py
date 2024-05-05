@@ -1,9 +1,56 @@
 from sqlalchemy.orm import Session
 
-from backend.app.models import user
+from backend.app import models, schemas, errors
+from .token import read_token
 
 
 def get_all_users(db: Session):
-    db_users = db.query(user.User).all()
+    """Получение всех пользователей"""
+    db_users = db.query(models.User).all()
 
     return db_users
+
+
+def create_user(db: Session, payload: schemas.UserCreateRequest) -> models.User:
+    """Создание пользователя"""
+
+    user = db.query(models.User).filter(models.User.email == payload.email).first()
+    if user is not None:
+        raise errors.EmailAlreadyAssociatedError()
+
+    db_user = models.User(
+        email=payload.email,
+        name=payload.name,
+        is_suberuser=True,
+    )
+    db_user.set_password(payload.password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+
+    return db_user
+
+
+def read_user_by_login(db: Session, payload: schemas.UserLoginRequest) -> models.User:
+    """Получение пользователя"""
+    user = db.query(models.User).filter(models.User.email == payload.email).first()
+
+    if user is None:
+        raise errors.AuthenticationError()
+
+    if user.check_password(password=payload.password):
+        return user
+
+    raise errors.AuthenticationError()
+
+
+def read_user_by_token(db: Session, token: str) -> models.User:
+    """Получение пользователя по токену"""
+    token = read_token(db, token)
+
+    user = db.query(models.User).filter(models.User.id == token.user_id).first()
+
+    if user is None:
+        raise errors.UserNotFoundError()
+
+    return user

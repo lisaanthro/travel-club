@@ -3,12 +3,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pathlib import Path
-from backend.app import db
-# from app import routers
+from backend.app import db, routers
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    print(db.BaseSqlModel.metadata.tables)
     db.BaseSqlModel.metadata.create_all(bind=db.engine)
     yield
 
@@ -24,7 +24,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # _app.include_router(routers.user.user_router)
+    _app.include_router(routers.user.user_router)
 
     @_app.get("/info")
     async def download_file():

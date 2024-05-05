@@ -1,26 +1,24 @@
 from datetime import datetime
 
-from sqlalchemy import create_engine, URL, DateTime
+from sqlalchemy import URL, DateTime, create_engine
+# from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import sessionmaker, Mapped, mapped_column
 
-credentials = {
-    'username': 'postgres',
-    'password': '123456',
-    'host': 'localhost',
-    'database': 'postgres',
-    'port': 5433,
-}
+from .config import get_settings
 
-db_url = URL.create(
-    'postgresql+psycopg2',
-    username=credentials['username'],
-    password=credentials['password'],
-    host=credentials['host'],
-    port=credentials['port'],
-    database=credentials['database'])
+settings = get_settings()
 
-engine = create_engine(db_url)
+url_object = URL.create(
+    drivername=settings.DB_ENGINE,
+    username=settings.DB_USER,
+    password=settings.DB_PASSWORD,
+    host=settings.DB_HOST,
+    port=settings.DB_PORT,
+    database=settings.DB_NAME,
+)
+
+engine = create_engine(url_object)
 
 SessionLocal = sessionmaker(
     autocommit=False,
