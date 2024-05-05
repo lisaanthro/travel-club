@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app import models, errors, utils
+from backend.app import models, errors, utils
 
 
 def create_token(db: Session, user_id: int) -> models.Token:

@@ -8,7 +8,6 @@ from backend.app import db, routers
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    print(db.BaseSqlModel.metadata.tables)
     db.BaseSqlModel.metadata.create_all(bind=db.engine)
     yield
 

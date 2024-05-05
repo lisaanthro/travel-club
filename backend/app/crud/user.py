@@ -21,7 +21,7 @@ def create_user(db: Session, payload: schemas.UserCreateRequest) -> models.User:
     db_user = models.User(
         email=payload.email,
         name=payload.name,
-        is_suberuser=True,
+        is_superuser=True,
     )
     db_user.set_password(payload.password)
     db.add(db_user)
