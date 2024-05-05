@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 
 COPY ./backend /backend
 
-CMD ["uvicorn", "limehd.main:app", "--host", "0.0.0.0"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0"]
