@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -45,7 +47,7 @@ def profile_user(user: models.User = Depends(current_user),
 
 
 @user_router.get("/get_all")
-def get_all_users(db: Session = Depends(get_db)):
+def get_all_users(db: Session = Depends(get_db)) -> List[schemas.User]:
     users = user.get_all_users(db)
 
-    return users
+    return serializers.get_users(users)
