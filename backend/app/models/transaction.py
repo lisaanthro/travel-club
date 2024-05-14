@@ -15,4 +15,4 @@ class Transaction(BaseSqlModel):
     pledge: Mapped[float] = mapped_column(Float)
     start_date: Mapped[datetime] = mapped_column(DateTime)
     end_date: Mapped[datetime] = mapped_column(DateTime)
-    final_end_date: Mapped[datetime] = mapped_column(DateTime)
+    final_end_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)

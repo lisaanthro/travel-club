@@ -4,7 +4,6 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app import schemas, crud, errors, serializers, models
-from app.crud import user
 from app.dependencies import get_db, current_user
 
 user_router = APIRouter(
@@ -48,7 +47,7 @@ def profile_user(user: models.User = Depends(current_user),
 
 @user_router.get(path="/get_all")
 def get_all_users(db: Session = Depends(get_db)) -> List[schemas.User]:
-    users = user.get_all_users(db)
+    users = crud.get_all_users(db)
 
     return serializers.get_users(users)
 

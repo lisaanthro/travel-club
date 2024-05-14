@@ -10,4 +10,12 @@ class Transaction(BaseModel):
     pledge: float
     start_date: datetime
     end_date: datetime
-    final_end_date: datetime
+    final_end_date: datetime | None
+
+
+class TransactionCreateRequest(BaseModel):
+    item_id: int
+    user_id: int
+    pledge: float
+    start_date: datetime
+    end_date: datetime
