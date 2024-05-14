@@ -52,3 +52,18 @@ def get_all_items_by_filter(db: Session, type: str, search_name: str) -> List[mo
     items = query.all()
 
     return items
+
+
+def update_item(db: Session, item_id: int, item_update: schemas.ItemUpdateRequest) -> models.Item:
+    item = db.query(models.Item).filter(models.Item.id == item_id).first()
+
+    if item is None:
+        raise errors.ItemNotFoundError()
+
+    for key, value in item_update.dict(exclude_unset=True).items():
+        setattr(item, key, value)
+
+    db.commit()
+    db.refresh(item)
+
+    return item

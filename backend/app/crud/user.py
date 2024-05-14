@@ -54,3 +54,18 @@ def read_user_by_token(db: Session, token: str) -> models.User:
         raise errors.UserNotFoundError()
 
     return user
+
+
+def update_user(db: Session, user_id: int, user_update: schemas.UserUpdateRequest) -> models.User:
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+
+    if user is None:
+        raise errors.UserNotFoundError()
+
+    for key, value in user_update.dict(exclude_unset=True).items():
+        setattr(user, key, value)
+
+    db.commit()
+    db.refresh(user)
+
+    return user

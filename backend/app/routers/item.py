@@ -27,6 +27,7 @@ def get_all_items(type: str | None = None,
     db_items = crud.get_all_items_by_filter(db,
                                             type=type,
                                             search_name=search_name)
+    # return {"message": "ok"}
 
     return serializers.get_items(db_items)
 
@@ -44,3 +45,12 @@ def create_item(item: schemas.ItemCreateRequest,
 #     db_items = crud.get_all_items_by_type(db, type)
 #
 #     return serializers.get_items(db_items)
+
+
+@item_router.put(path="/{item_id}")
+def update_item(item_id: int,
+                item_update: schemas.ItemUpdateRequest = Body(...),
+                db: Session = Depends(get_db)) -> schemas.Item:
+    db_item = crud.update_item(db, item_id, item_update)
+
+    return serializers.get_item(db_item)

@@ -20,3 +20,13 @@ class ItemCreateRequest(BaseModel):
     condition: str
     price: float
     image: str
+
+
+class ItemUpdateRequest(BaseModel):
+    name: str | None = None
+    inventary_id: int | None = None
+    type: str | None = None
+    specification: dict | None = None
+    condition: str | None = None
+    price: float | None = None
+    image: str | None = None

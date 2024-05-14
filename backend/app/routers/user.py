@@ -46,8 +46,19 @@ def profile_user(user: models.User = Depends(current_user),
     return serializers.get_user(user)
 
 
-@user_router.get("/get_all")
+@user_router.get(path="/get_all")
 def get_all_users(db: Session = Depends(get_db)) -> List[schemas.User]:
     users = user.get_all_users(db)
 
     return serializers.get_users(users)
+
+
+@user_router.put(path="/{user_id}")
+def update_user(user_id: int,
+                user_update: schemas.UserUpdateRequest = Body(...),
+                db: Session = Depends(get_db)) -> schemas.User:
+    db_user = crud.update_user(db, user_id, user_update)
+
+    return serializers.get_user(db_user)
+
+
