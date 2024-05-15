@@ -1,10 +1,12 @@
-FROM python:3.11-alpine
+FROM python:3.11
 
-WORKDIR /backend
+WORKDIR /app
 
-COPY ./backend /backend
+COPY requirements.txt /app/requirements.txt
 
-RUN pip install -r requirements.txt
+RUN ["pip3", "install", "-r", "requirements.txt"]
+
+COPY . /app/
 
 EXPOSE 8000
 

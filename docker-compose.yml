@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  app:
+    build:
+      dockerfile: ./backend/Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db_postgres
+
+  db_postgres:
+    image: postgres:latest
+    container_name: postgres_db_container
+    ports:
+      - "5433:5433"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: postgres
