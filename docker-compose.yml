@@ -3,7 +3,8 @@ version: '3'
 services:
   app:
     build:
-      dockerfile: ./backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     depends_on:
@@ -14,7 +15,5 @@ services:
     container_name: postgres_db_container
     ports:
       - "5433:5433"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
-      POSTGRES_DB: postgres
+    env_file:
+      - ./backend/app/.env
