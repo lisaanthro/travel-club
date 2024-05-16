@@ -6,6 +6,7 @@ class Transaction(BaseModel):
     id: int
     item_id: int
     user_id: int
+    type: str
     cost: float
     pledge: float
     start_date: datetime
@@ -15,7 +16,10 @@ class Transaction(BaseModel):
 
 class TransactionCreateRequest(BaseModel):
     item_id: int
-    user_id: int
     pledge: float
     start_date: datetime
     end_date: datetime
+
+
+class TransactionUpdateRequest(BaseModel):
+    final_end_date: datetime

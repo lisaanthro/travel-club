@@ -9,6 +9,7 @@ def get_transaction(db_transaction: db_model_transaction.Transaction) -> schemas
         id=db_transaction.id,
         item_id=db_transaction.item_id,
         user_id=db_transaction.user_id,
+        type=db_transaction.type,
         cost=db_transaction.cost,
         pledge=db_transaction.pledge,
         start_date=db_transaction.start_date,

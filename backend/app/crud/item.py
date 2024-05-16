@@ -1,4 +1,5 @@
 from typing import List
+import json
 
 from sqlalchemy.orm import Session
 
@@ -29,7 +30,7 @@ def create_item(db: Session, item_create: schemas.ItemCreateRequest, is_superuse
         name=item_create.name,
         inventary_id=item_create.inventary_id,
         type=item_create.type,
-        specification={},
+        specification=json.loads(item_create.specification.model_dump_json()),
         condition=item_create.condition,
         price=item_create.price,
         image=item_create.image,

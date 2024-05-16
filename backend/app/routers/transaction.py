@@ -10,11 +10,15 @@ transaction_router = APIRouter(
 )
 
 
-@transaction_router.post(path="/create")
-def create_transaction(transaction: schemas.TransactionCreateRequest = Body(...),
+@transaction_router.post(path="/create/{transaction_type}")
+def create_rent_transaction(transaction_type, transaction: schemas.TransactionCreateRequest = Body(...),
                        db: Session = Depends(get_db),
                        user: models.User = Depends(current_user)) -> schemas.Transaction:
-    db_item = crud.get_item_by_id(db, transaction.item_id)
-    db_transaction = crud.create_transaction(db, transaction, db_item, user)
+    try:
+        db_item = crud.get_item_by_id(db, transaction.item_id)
+        db_transaction = crud.create_transaction(db, transaction, db_item, user, transaction_type)
 
-    return serializers.get_transaction(db_transaction)
+        return serializers.get_transaction(db_transaction)
+
+    except errors.TransactionTypeError as e:
+        raise HTTPException(status_code=401, detail=str(e))
