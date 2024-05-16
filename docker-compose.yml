@@ -9,11 +9,12 @@ services:
       - "8000:8000"
     depends_on:
       - db_postgres
+    env_file:
+      - ./backend/app/.env
 
   db_postgres:
     image: postgres:latest
-    container_name: postgres_db_container
     ports:
-      - "5433:5433"
+      - "5434:5432"
     env_file:
       - ./backend/app/.env
