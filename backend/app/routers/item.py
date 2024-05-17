@@ -26,7 +26,6 @@ def get_all_items(type: str | None = None,
     db_items = crud.get_all_items_by_filter(db,
                                             type=type,
                                             search_name=search_name)
-    # return {"message": "ok"}
 
     return serializers.get_items(db_items)
 

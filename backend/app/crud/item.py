@@ -26,7 +26,7 @@ def create_item(db: Session, item_create: schemas.ItemCreateRequest, is_superuse
     # TODO: add s3 link to image field
     # TODO: handle validation errors
 
-    db_item = models.Item(
+    item = models.Item(
         name=item_create.name,
         inventary_id=item_create.inventary_id,
         type=item_create.type,
@@ -36,7 +36,7 @@ def create_item(db: Session, item_create: schemas.ItemCreateRequest, is_superuse
         image=item_create.image,
     )
 
-    db.add(db_item)
+    db.add(item)
     db.commit()
 
     return db_item

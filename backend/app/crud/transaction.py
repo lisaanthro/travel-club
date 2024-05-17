@@ -10,7 +10,7 @@ def create_transaction(db: Session, transaction: schemas.TransactionCreateReques
     if transaction_type not in ["rent", "repair"]:
         raise errors.TransactionTypeError()
 
-    db_transaction = models.Transaction(
+    transaction = models.Transaction(
         item_id=item.id,
         user_id=user.id,
         type=transaction_type,
@@ -21,7 +21,35 @@ def create_transaction(db: Session, transaction: schemas.TransactionCreateReques
         final_end_date=None,
     )
 
-    db.add(db_transaction)
+    db.add(transaction)
     db.commit()
 
-    return db_transaction
+    return transaction
+
+
+def get_transaction_by_id(db: Session, transaction_id: int) -> models.Transaction:
+    transaction = db.query(models.Transaction).filter(models.Transaction.id == transaction_id).first()
+
+    return transaction
+
+
+def get_all_transactions(db: Session) -> List[models.Transaction]:
+    transactions = db.query(models.Transaction).all()
+
+    return transactions
+
+
+def update_transaction(db: Session, transaction_id: int,
+                       transacton_update: schemas.TransactionUpdateRequest) -> models.Transaction:
+    transaction = db.query(models.Transaction).filter(models.Transaction.id == transaction_id).first()
+
+    if transaction is None:
+        raise errors.TransactionNonFound
+
+    for key, value in transacton_update.dict(exclude_unset=True).items():
+        setattr(transaction, key, value)
+
+    db.commit()
+    db.refresh(transaction)
+
+    return transaction
