@@ -20,7 +20,7 @@ def current_user(
     if not access_token:
         raise HTTPException(
             status_code=401,
-            detail="Not authenticated lisa",
+            detail="Not authenticated",
         )
 
     return crud.read_user_by_token(db, access_token.credentials)

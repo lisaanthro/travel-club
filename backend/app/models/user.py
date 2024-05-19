@@ -1,6 +1,7 @@
 from sqlalchemy import Integer, String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from werkzeug.security import generate_password_hash, check_password_hash
+from typing import List
 
 from app.db import BaseSqlModel
 
@@ -13,6 +14,8 @@ class User(BaseSqlModel):
     name: Mapped[str] = mapped_column(String, nullable=True)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+    transactions: Mapped[List['Transaction']] = relationship('Transaction', back_populates='user')
 
     tokens: Mapped[list['Token']] = relationship(
         cascade='all,delete-orphan',

@@ -1,5 +1,6 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, JSON, Float
+from typing import List
 
 from app.db import BaseSqlModel
 
@@ -15,3 +16,5 @@ class Item(BaseSqlModel):
     condition: Mapped[str] = mapped_column(String)
     price: Mapped[float] = mapped_column(Float)
     image: Mapped[str] = mapped_column(String)
+
+    transactions: Mapped[List['Transaction']] = relationship('Transaction', back_populates='item')

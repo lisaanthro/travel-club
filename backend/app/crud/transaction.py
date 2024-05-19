@@ -2,6 +2,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from app.crud import get_item_by_id
 from app import models, schemas, errors
 
 
@@ -40,16 +41,31 @@ def get_all_transactions(db: Session) -> List[models.Transaction]:
 
 
 def update_transaction(db: Session, transaction_id: int,
-                       transacton_update: schemas.TransactionUpdateRequest) -> models.Transaction:
+                       transaction_update: schemas.TransactionUpdateRequest) -> models.Transaction:
     transaction = db.query(models.Transaction).filter(models.Transaction.id == transaction_id).first()
 
     if transaction is None:
         raise errors.TransactionNonFound
 
-    for key, value in transacton_update.dict(exclude_unset=True).items():
+    item = get_item_by_id(db, transaction.item_id)
+    transaction.cost = ((transaction_update.final_end_date - transaction.start_date).days + 1) * item.price
+
+    for key, value in transaction_update.dict(exclude_unset=True).items():
         setattr(transaction, key, value)
 
     db.commit()
     db.refresh(transaction)
 
     return transaction
+
+
+def get_transactions_by_user_id(db: Session, user_id: int) -> List[models.Transaction]:
+    transactions = db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
+
+    return transactions
+
+
+def get_transactions_by_item_id(db: Session, item_id: int) -> List[models.Transaction]:
+    transactions = db.query(models.Transaction).filter(models.Transaction.item_id == item_id).all()
+
+    return transactions
