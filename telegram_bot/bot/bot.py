@@ -1,15 +1,18 @@
 import asyncio
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.fsm.state import StatesGroup
+from aiohttp import ClientSession
+import os
 
 from http import HTTPStatus
+from s3_script import s3_client as s3, S3_BUCKET_NAME
 
 from config_reader import config
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State
-from aiogram.types import ReplyKeyboardRemove
+from aiogram.types import ReplyKeyboardRemove, ContentType, FSInputFile
 from keyboards import *
 from aiogram.filters import StateFilter
 import requests
@@ -17,7 +20,9 @@ import json
 
 s = requests.session()
 
-bot = Bot(token=config.bot_token.get_secret_value())
+BOT_TOKEN = config.bot_token.get_secret_value()
+
+bot = Bot(BOT_TOKEN)
 dp = Dispatcher()
 
 
@@ -76,12 +81,16 @@ async def post_mail_name_password(message: types.Message, state: FSMContext):
     url = 'http://127.0.0.1:8000/user/register'
     email, name, password = message.text.split()
     payload = {'email': email, 'name': name, 'password': password}
-    token = s.post(url, json=payload).json().get('bearer_token')
-    s.headers = {'Authorization': f'Bearer {token}'}
-    print('registered')
+    response = s.post(url, json=payload)
+    if response.status_code == HTTPStatus.OK:
+        token = response.json().get('bearer_token')
+        s.headers = {'Authorization': f'Bearer {token}'}
+        print('registered')
 
-    await message.answer('Данные приняты', reply_markup=main_keyboard)
-    await state.set_state(FSM.main_menu_next)
+        await message.answer('Данные приняты', reply_markup=main_keyboard)
+        await state.set_state(FSM.main_menu_next)
+    else:
+        await message.answer(str(response.content))
 
 
 @dp.message(F.text.contains('@'), FSM.sign_in_next)
@@ -162,7 +171,7 @@ async def get_all_items(message: types.Message, state: FSMContext):
 
     for item in response.json():
         item_text = f"/{item.get('id')}\\ {item.get('name')}\\ *{item.get('type')}*\\ {item.get('price')} руб\n"
-        message_text += item_text.replace('.', r'\.')
+        message_text += item_text.replace('.', r'\.') + '\n'
 
     await message.answer(message_text, parse_mode="MarkdownV2", reply_markup=item_keyboard)
     await state.set_state(FSM.item_choice)
@@ -179,8 +188,27 @@ async def get_item_by_id(message: types.Message, state: FSMContext):
     item_text = f"{item.get('name')}\n{item.get('inventary_id')}\n{item.get('type')}\n" \
                 f"{item.get('condition')}\n{item.get('price')}"
 
+    try:
+        file_name = f"{item_id}.jpg"
+        file_path = f"{file_name}"  # Temporary local path to save the file
+
+        # Download photo from S3
+        s3.download_file(S3_BUCKET_NAME, file_name, file_path)
+
+        # Send photo to user
+        print('photo')
+        image_from_pc = FSInputFile(file_name)
+        result = await message.answer_photo(
+            image_from_pc,
+            caption=item_text,
+            reply_markup=item_id_keyboard
+        )
+        # TODO: add proper file path
+        os.remove(file_path)
+    except Exception as e:
+        await message.answer(item_text, reply_markup=item_id_keyboard)
+
     await state.update_data(current_item_id=item_id)
-    await message.answer(item_text, reply_markup=item_id_keyboard)
     await state.set_state(FSM.item_id_choice)
 
 
@@ -196,6 +224,46 @@ async def change_item_by_id_input(message: types.Message, state: FSMContext):
                          reply_markup=ReplyKeyboardRemove())
     await state.update_data(item_update_type=message.text)
     await state.set_state(FSM.request_change_item_id)
+
+
+@dp.message(F.text == 'Фото', FSM.change_item_id)
+async def change_item_photo_input(message: types.Message, state: FSMContext):
+    await message.answer('Отправьте сюда фото, которое хотите поставить')
+    await state.set_state(FSM.request_change_item_id)
+
+
+@dp.message(F.content_type == 'photo', FSM.request_change_item_id)
+async def request_change_item_photo_by_id(message: types.Message, state: FSMContext):
+    photo = message.photo[-1]  # Get the highest resolution photo
+    data = await state.get_data()
+    item_id = data.get('current_item_id')
+
+    # Download the photo
+    file_info = await bot.get_file(photo.file_id)
+    file_url = f'https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}'
+
+    async with ClientSession() as session:
+        async with session.get(file_url) as resp:
+            if resp.status == 200:
+                file_data = await resp.read()
+                file_name = f"{item_id}.jpg"
+
+                # Save the photo locally
+                with open(file_name, 'wb') as f:
+                    f.write(file_data)
+
+                # Upload to S3
+                try:
+                    s3.upload_file(file_name, S3_BUCKET_NAME, file_name)
+                    await message.reply("Фото обновлено!", reply_markup=main_keyboard)
+
+                    # Delete the local file
+                    os.remove(file_name)
+                    await state.set_state(FSM.main_menu_next)
+                except Exception as e:
+                    await message.reply("Failed to upload photo to S3")
+            else:
+                await message.reply("Failed to download photo")
 
 
 @dp.message(FSM.request_change_item_id)
@@ -222,6 +290,24 @@ async def request_change_item_by_id(message: types.Message, state: FSMContext):
     print(response.json())
     await message.answer(f'{item_update_type}: {message.text} - изменения прошли успешно!',
                          reply_markup=main_keyboard)
+    await state.set_state(FSM.main_menu_next)
+
+
+@dp.message(F.text == 'Посмотреть транзакции', FSM.item_id_choice)
+async def get_transactions_by_item_id(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    item_id = data.get('current_item_id')
+
+    url = f'http://127.0.0.1:8000/transaction/item/{item_id}'
+    response = s.get(url)
+    message_text = "Список транзакций:\n"
+
+    for transaction in response.json():
+        item_text = f"/{transaction.get('id')}\n{transaction.get('user_id')}\n{transaction.get('type')}\n{transaction.get('cost')} руб\n" \
+                    f"{transaction.get('start_date')}\n{'Не завершена' if transaction.get('final_end_date') is None else 'Завершена'}"
+        message_text += item_text + '\n'
+
+    await message.answer(message_text, reply_markup=main_keyboard)
     await state.set_state(FSM.main_menu_next)
 
 
