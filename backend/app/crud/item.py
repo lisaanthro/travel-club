@@ -30,7 +30,8 @@ def create_item(db: Session, item_create: schemas.ItemCreateRequest, is_superuse
         name=item_create.name,
         inventary_id=item_create.inventary_id,
         type=item_create.type,
-        specification=json.loads(item_create.specification.model_dump_json()),
+        # specification=json.loads(item_create.specification.model_dump_json()),
+        specification={},
         condition=item_create.condition,
         price=item_create.price,
         image=item_create.image,
@@ -39,7 +40,7 @@ def create_item(db: Session, item_create: schemas.ItemCreateRequest, is_superuse
     db.add(item)
     db.commit()
 
-    return db_item
+    return item
 
 
 def get_all_items_by_filter(db: Session, type: str, search_name: str) -> List[models.Item]:

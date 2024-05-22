@@ -8,7 +8,8 @@ class Item(BaseModel):
     name: str
     inventary_id: int
     type: str
-    specification: specification.Specification
+    # specification: specification.Specification
+    specification: dict
     condition: str
     price: float
     image: str
