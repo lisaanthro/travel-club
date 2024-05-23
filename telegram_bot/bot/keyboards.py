@@ -66,10 +66,10 @@ def create_update_item_keyboard():
     update_item_button3 = types.KeyboardButton(text='Тип')
     update_item_button4 = types.KeyboardButton(text='Состояние')
     update_item_button5 = types.KeyboardButton(text='Цена')
-    update_item_button5 = types.KeyboardButton(text='Фото')
+    update_item_button6 = types.KeyboardButton(text='Фото')
     update_item_keyboard = types.ReplyKeyboardMarkup(
         keyboard=[[update_item_button1], [update_item_button2], [update_item_button3],
-                  [update_item_button4], [update_item_button5]], resize_keyboard=True)
+                  [update_item_button4], [update_item_button5], [update_item_button6]], resize_keyboard=True)
 
     return update_item_keyboard
 
