@@ -19,7 +19,7 @@ class ItemCreateRequest(BaseModel):
     name: str
     inventary_id: int
     type: str
-    specification: specification.Specification
+    # specification: specification.Specification
     condition: str
     price: float
     image: str
