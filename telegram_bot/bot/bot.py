@@ -1,6 +1,7 @@
 import asyncio
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.fsm.state import StatesGroup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiohttp import ClientSession
 import os
 
@@ -17,6 +18,9 @@ from keyboards import *
 from aiogram.filters import StateFilter
 import requests
 import json
+
+import emoji
+import datetime
 
 s = requests.session()
 
@@ -84,6 +88,7 @@ async def post_mail_name_password(message: types.Message, state: FSMContext):
     response = s.post(url, json=payload)
     if response.status_code == HTTPStatus.OK:
         token = response.json().get('bearer_token')
+        print(token)
         s.headers = {'Authorization': f'Bearer {token}'}
         print('registered')
 
@@ -167,13 +172,16 @@ async def request_change_profile(message: types.Message, state: FSMContext):
 async def get_all_items(message: types.Message, state: FSMContext):
     url = 'http://127.0.0.1:8000/item'
     response = s.get(url)
-    message_text = "Список снаряжения:\n"
+    message_text = "Список снаряжения:\n\n"
 
     for item in response.json():
         item_text = f"/{item.get('id')}\\ {item.get('name')}\\ *{item.get('type')}*\\ {item.get('price')} руб\n"
         message_text += item_text.replace('.', r'\.') + '\n'
 
-    await message.answer(message_text, parse_mode="MarkdownV2", reply_markup=item_keyboard)
+    # builder = InlineKeyboardBuilder()
+    # builder.row(types.InlineKeyboardButton(text=city, url=link))
+    # await message.answer('Перейдите по ссылке ниже:', reply_markup=builder.as_markup())
+    await message.answer(text = emoji.emojize(":tent:") + message_text, parse_mode="MarkdownV2", reply_markup=item_keyboard)
     await state.set_state(FSM.item_choice)
 
 
@@ -210,6 +218,41 @@ async def get_item_by_id(message: types.Message, state: FSMContext):
 
     await state.update_data(current_item_id=item_id)
     await state.set_state(FSM.item_id_choice)
+
+@dp.message(F.text == 'Взять в аренду', FSM.item_id_choice)
+async def change_item_by_id(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    item_id = int(data.get('current_item_id'))
+    await message.answer(text='Введите через пробел стоимость залога и планируемую дату возврата в формате yyyy.mm.dd', reply_markup=ReplyKeyboardRemove())
+    await state.update_data(current_item_id=item_id)
+    await state.set_state(FSM.rent_next)
+
+@dp.message(FSM.rent_next)
+async def create_transaction_by_id(message: types.Message, state: FSMContext):
+    url = 'http://127.0.0.1:8000/transaction/create/rent'
+    str_pledge, planned_date = message.text.split()
+    year, month, day = map(int, planned_date.split('.'))
+    end_date = datetime.date(year, month, day)
+    str_end_date = str(end_date)
+    today = datetime.date.today()
+    str_today = str(today)
+
+    data = await state.get_data()
+    item_id = int(data.get('current_item_id'))
+
+    pledge = float(str_pledge)
+    payload = {'item_id': item_id, 'pledge': pledge, 'start_date': str_today, 'end_date': str_end_date}
+    print(payload)
+    response = s.post(url, json=payload)
+
+    if response.status_code == HTTPStatus.OK:
+        print(response.json())
+        await message.answer('Снаряжение забронировано за Вами', reply_markup=main_keyboard)
+        await state.set_state(FSM.main_menu_next)
+    else:
+        print(response.json())
+        await message.answer(str(response.content))
+
 
 
 @dp.message(F.text == 'Изменить', FSM.item_id_choice)
@@ -326,6 +369,8 @@ async def item_create(message: types.Message, state: FSMContext):
 @dp.message(FSM.item_create)
 async def request_item_create(message: types.Message, state: FSMContext):
     print(message.text)
+    data_input = message.text
+
     # TODO: validate that input consists of 5 values, separated by '\n', inventary_id and price are int
     name, inventary_id, item_type, condition, price = message.text.split('\n')
     inventary_id = int(inventary_id)

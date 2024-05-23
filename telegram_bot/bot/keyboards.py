@@ -52,10 +52,10 @@ def create_item_keyboard():
 
 
 def create_item_id_keyboard():
-    item_id_keyboard_button1 = types.KeyboardButton(text='Изменить')
-    item_id_keyboard_button2 = types.KeyboardButton(text='Посмотреть транзакции')
-    item_id_keyboard = types.ReplyKeyboardMarkup(
-        keyboard=[[item_id_keyboard_button1], [item_id_keyboard_button2]], resize_keyboard=True)
+    item_id_keyboard_button1 = types.KeyboardButton(text='Взять в аренду')
+    item_id_keyboard_button2 = types.KeyboardButton(text='Изменить')
+    item_id_keyboard_button3 = types.KeyboardButton(text='Посмотреть транзакции')
+    item_id_keyboard = types.ReplyKeyboardMarkup(keyboard=[[item_id_keyboard_button1], [item_id_keyboard_button2], [item_id_keyboard_button3]], resize_keyboard=True)
 
     return item_id_keyboard
 
