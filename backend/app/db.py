@@ -11,7 +11,7 @@ settings = get_settings()
 
 url_object = URL.create(
     drivername=settings.DB_ENGINE,
-    username=settings.DB_USER,
+    username=settings.POSTGRES_USER,
     password=settings.POSTGRES_PASSWORD,
     host=settings.DB_HOST,
     port=settings.DB_PORT,
@@ -25,7 +25,6 @@ SessionLocal = sessionmaker(
     autoflush=False,
     bind=engine,
 )
-
 
 class BaseSqlModel(DeclarativeBase):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
