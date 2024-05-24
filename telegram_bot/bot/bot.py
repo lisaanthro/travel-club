@@ -30,11 +30,10 @@ s = requests.session()
 BOT_TOKEN = config.bot_token.get_secret_value()
 
 bot = Bot(BOT_TOKEN)
-# redis = Redis(host=redis_host, port=6379)
-# storage = RedisStorage(redis=redis)
-# dp = Dispatcher(storage=storage)
+redis = Redis(host=redis_host, port=6379)
+storage = RedisStorage(redis=redis)
+dp = Dispatcher(storage=storage)
 
-dp = Dispatcher()
 
 
 class FSM(StatesGroup):
