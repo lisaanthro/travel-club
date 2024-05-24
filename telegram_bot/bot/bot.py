@@ -35,7 +35,6 @@ storage = RedisStorage(redis=redis)
 dp = Dispatcher(storage=storage)
 
 
-
 class FSM(StatesGroup):
     auth_next = State()
     sign_in_next = State()
@@ -455,7 +454,8 @@ async def get_transactions_by_item_id(message: types.Message, state: FSMContext)
 
     for transaction in response.json():
         user_id = transaction.get("user_id")
-        user = s.get(f"https://gear.dino-misis.ru/user/{user_id}").json()
+        print(user_id)
+        user = s.put(f"https://gear.dino-misis.ru/user/{user_id}", json={}).json()
         final_end_date = transaction.get("final_end_date")
         string_date = f"-{final_end_date}\nЗАВЕРШЕНА"
         item_text = (
