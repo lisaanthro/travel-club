@@ -1,6 +1,7 @@
 import asyncio
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.fsm.state import StatesGroup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiohttp import ClientSession
 import os
 
@@ -17,6 +18,9 @@ from keyboards import *
 from aiogram.filters import StateFilter
 import requests
 import json
+
+import emoji
+import datetime
 
 s = requests.session()
 
@@ -47,10 +51,13 @@ class FSM(StatesGroup):
     change_item_id = State()
     request_change_item_id = State()
 
+    transaction_user_choice = State()
     get_item_info_for_rent_next = State()
     get_item_info_for_return_next = State()
     rent_next = State()
+    repair_next = State()
     return_next = State()
+    finish_transaction_next = State()
 
 
 @dp.message(Command('start'))
@@ -84,6 +91,7 @@ async def post_mail_name_password(message: types.Message, state: FSMContext):
     response = s.post(url, json=payload)
     if response.status_code == HTTPStatus.OK:
         token = response.json().get('bearer_token')
+        print(token)
         s.headers = {'Authorization': f'Bearer {token}'}
         print('registered')
 
@@ -139,13 +147,17 @@ async def redirect_from_profile(message: types.Message, state: FSMContext):
     await state.set_state(FSM.main_menu_next)
 
 
-@dp.message(F.text.in_({'email', 'имя'}), FSM.change_profile_next)
+@dp.message(F.text.in_({'Email', 'Имя'}), FSM.change_profile_next)
 async def change_profile_input(message: types.Message, state: FSMContext):
     await message.answer(f'Введите {message.text}:',
                          reply_markup=ReplyKeyboardRemove())
     await state.update_data(profile_update_type=message.text)
     await state.set_state(FSM.request_change_profile_next)
 
+@dp.message(F.text == 'В главное меню', FSM.change_profile_next)
+async def to_main_menu(message: types.Message, state: FSMContext):
+    await message.answer("Главное меню", reply_markup=main_keyboard)
+    await state.set_state(FSM.main_menu_next)
 
 @dp.message(FSM.request_change_profile_next)
 async def request_change_profile(message: types.Message, state: FSMContext):
@@ -167,13 +179,16 @@ async def request_change_profile(message: types.Message, state: FSMContext):
 async def get_all_items(message: types.Message, state: FSMContext):
     url = 'http://127.0.0.1:8000/item'
     response = s.get(url)
-    message_text = "Список снаряжения:\n"
+    message_text = "Список снаряжения:\n\n"
 
     for item in response.json():
         item_text = f"/{item.get('id')}\\ {item.get('name')}\\ *{item.get('type')}*\\ {item.get('price')} руб\n"
         message_text += item_text.replace('.', r'\.') + '\n'
 
-    await message.answer(message_text, parse_mode="MarkdownV2", reply_markup=item_keyboard)
+    # builder = InlineKeyboardBuilder()
+    # builder.row(types.InlineKeyboardButton(text=city, url=link))
+    # await message.answer('Перейдите по ссылке ниже:', reply_markup=builder.as_markup())
+    await message.answer(text = emoji.emojize(":tent:") + message_text, parse_mode="MarkdownV2", reply_markup=item_keyboard)
     await state.set_state(FSM.item_choice)
 
 
@@ -212,10 +227,98 @@ async def get_item_by_id(message: types.Message, state: FSMContext):
     await state.set_state(FSM.item_id_choice)
 
 
+@dp.message(F.text == 'В главное меню', FSM.item_choice)
+async def to_main_menu(message: types.Message, state: FSMContext):
+    await message.answer("Главное меню", reply_markup=main_keyboard)
+    await state.set_state(FSM.main_menu_next)
+
+@dp.message(F.text == 'В главное меню', FSM.item_id_choice)
+async def to_main_menu(message: types.Message, state: FSMContext):
+    await message.answer("Главное меню", reply_markup=main_keyboard)
+    await state.set_state(FSM.main_menu_next)
+
+
+@dp.message(F.text == 'Взять в аренду', FSM.item_id_choice)
+async def change_item_by_id(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    item_id = int(data.get('current_item_id'))
+    await message.answer(text='Введите через пробел стоимость залога и планируемую дату возврата в формате yyyy.mm.dd', reply_markup=ReplyKeyboardRemove())
+    await state.update_data(current_item_id=item_id)
+    await state.set_state(FSM.rent_next)
+
+@dp.message(FSM.rent_next)
+async def create_transaction_by_id(message: types.Message, state: FSMContext):
+    url = 'http://127.0.0.1:8000/transaction/create/rent'
+    str_pledge, planned_date = message.text.split()
+    year, month, day = map(int, planned_date.split('.'))
+    end_date = datetime.date(year, month, day)
+    str_end_date = str(end_date)
+    today = datetime.date.today()
+    str_today = str(today)
+
+    data = await state.get_data()
+    item_id = int(data.get('current_item_id'))
+
+    pledge = float(str_pledge)
+    payload = {'item_id': item_id, 'pledge': pledge, 'start_date': str_today, 'end_date': str_end_date}
+    print(payload)
+    response = s.post(url, json=payload)
+
+    if response.status_code == HTTPStatus.OK:
+        print(response.json())
+        await message.answer('Снаряжение забронировано за Вами', reply_markup=main_keyboard)
+        await state.set_state(FSM.main_menu_next)
+    else:
+        print(response.json())
+        await message.answer(str(response.content))
+
+
+@dp.message(F.text == 'Отдать в ремонт', FSM.item_id_choice)
+async def change_item_by_id(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    item_id = int(data.get('current_item_id'))
+    await message.answer(text='Введите через пробел стоимость залога и планируемую дату возврата в формате yyyy.mm.dd', reply_markup=ReplyKeyboardRemove())
+    await state.update_data(current_item_id=item_id)
+    await state.set_state(FSM.repair_next)
+
+
+@dp.message(FSM.repair_next)
+async def create_transaction_by_id(message: types.Message, state: FSMContext):
+    url = 'http://127.0.0.1:8000/transaction/create/repair'
+    str_pledge, planned_date = message.text.split()
+    year, month, day = map(int, planned_date.split('.'))
+    end_date = datetime.date(year, month, day)
+    str_end_date = str(end_date)
+    today = datetime.date.today()
+    str_today = str(today)
+
+    data = await state.get_data()
+    item_id = int(data.get('current_item_id'))
+
+    pledge = float(str_pledge)
+    payload = {'item_id': item_id, 'pledge': pledge, 'start_date': str_today, 'end_date': str_end_date}
+    print(payload)
+    response = s.post(url, json=payload)
+
+    if response.status_code == HTTPStatus.OK:
+        print(response.json())
+        await message.answer('Ремонт оформлен', reply_markup=main_keyboard)
+        await state.set_state(FSM.main_menu_next)
+    else:
+        print(response.json())
+        await message.answer(str(response.content))
+
+
 @dp.message(F.text == 'Изменить', FSM.item_id_choice)
 async def change_item_by_id(message: types.Message, state: FSMContext):
     await message.answer(text='Какие данные хотите изменить?', reply_markup=update_item_keyboard)
     await state.set_state(FSM.change_item_id)
+
+
+@dp.message(F.text == 'В главное меню', FSM.change_item_id)
+async def to_main_menu(message: types.Message, state: FSMContext):
+    await message.answer("Главное меню", reply_markup=main_keyboard)
+    await state.set_state(FSM.main_menu_next)
 
 
 @dp.message(F.text.in_({'Название', 'Инвентарный номер', 'Тип', 'Состояние', 'Цена'}), FSM.change_item_id)
@@ -303,6 +406,7 @@ async def get_transactions_by_item_id(message: types.Message, state: FSMContext)
     message_text = "Список транзакций:\n"
 
     for transaction in response.json():
+        print(transaction)
         item_text = f"/{transaction.get('id')}\n{transaction.get('user_id')}\n{transaction.get('type')}\n{transaction.get('cost')} руб\n" \
                     f"{transaction.get('start_date')}\n{'Не завершена' if transaction.get('final_end_date') is None else 'Завершена'}"
         message_text += item_text + '\n'
@@ -326,6 +430,8 @@ async def item_create(message: types.Message, state: FSMContext):
 @dp.message(FSM.item_create)
 async def request_item_create(message: types.Message, state: FSMContext):
     print(message.text)
+    data_input = message.text
+
     # TODO: validate that input consists of 5 values, separated by '\n', inventary_id and price are int
     name, inventary_id, item_type, condition, price = message.text.split('\n')
     inventary_id = int(inventary_id)
@@ -344,6 +450,135 @@ async def request_item_create(message: types.Message, state: FSMContext):
 
     await message.answer(f'Снаряжение {name} было добавлено', reply_markup=main_keyboard)
     await state.set_state(FSM.main_menu_next)
+
+
+@dp.message(F.text == 'Транзакции всех пользователей', FSM.main_menu_next)
+async def get_all_transactions(message: types.Message, state: FSMContext):
+    url = f'http://127.0.0.1:8000/transaction/'
+    response = s.get(url)
+    message_text = "Список транзакций:\n"
+
+    for transaction in response.json():
+        transaction_text = f"/{transaction.get('id')}\nтип транзакции:  {transaction.get('type')}\nцена:  {transaction.get('cost')} руб\nзалог:  {transaction.get('pledge')} руб \n" \
+                    f"дата аренды:  {transaction.get('start_date')} \n{'НЕ ЗАВЕРШЕНА' if transaction.get('final_end_date') is None else 'ЗАВЕРШЕНА'}"
+        message_text += transaction_text + '\n'
+
+    await message.answer(message_text, reply_markup=user_transaction_keyboard)
+    await state.set_state(FSM.get_item_info_for_return_next)
+
+
+@dp.message(F.text == 'В главное меню', FSM.get_item_info_for_return_next)
+async def to_main_menu(message: types.Message, state: FSMContext):
+    await message.answer("Главное меню", reply_markup=main_keyboard)
+    await state.set_state(FSM.main_menu_next)
+
+
+@dp.message(F.text.startswith('/'), FSM.get_item_info_for_return_next)
+async def get_transaction_by_id(message: types.Message, state: FSMContext):
+    transaction_id = message.text.strip('/')
+    url = f'http://127.0.0.1:8000/transaction/{transaction_id}'
+    message_text = f"Транзакция №{transaction_id}\n"
+    response = s.get(url)
+    transaction = response.json()
+
+    message_text += f"{transaction.get('type')}\n{transaction.get('cost')} руб\n" \
+                    f"{transaction.get('start_date')}\n{'Не завершена' if transaction.get('final_end_date') is None else transaction.get('final_end_date')}"
+
+    await message.answer(message_text, reply_markup=finish_transaction_keyboard)
+    await state.update_data(current_transaction_id=transaction_id)
+    await state.set_state(FSM.finish_transaction_next)
+
+
+@dp.message(F.text == 'Завершить транзакцию', FSM.finish_transaction_next)
+async def get_transaction_by_id(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    transaction_id = int(data.get('current_transaction_id'))
+    url = f'http://127.0.0.1:8000/transaction/{transaction_id}'
+    today = datetime.date.today()
+    str_today = str(today)
+
+    response = s.put(url, json = {'final_end_date': str_today})
+    transaction = response.json()
+    print(transaction)
+
+    if response.status_code == HTTPStatus.OK:
+        print(response.json())
+        await message.answer('Транзация завершена успешно', reply_markup=main_keyboard)
+        await state.set_state(FSM.main_menu_next)
+    else:
+        print(response.json())
+        await message.answer(str(response.content))
+
+
+@dp.message(F.text == 'В главное меню', FSM.finish_transaction_next)
+async def to_main_menu(message: types.Message, state: FSMContext):
+    await message.answer("Главное меню", reply_markup=main_keyboard)
+    await state.set_state(FSM.main_menu_next)
+
+
+@dp.message(F.text == 'Список пользователей', FSM.main_menu_next)
+async def get_all_users(message: types.Message, state: FSMContext):
+    url = 'http://127.0.0.1:8000/user/get_all'
+    response = s.get(url)
+    message_text = "Список пользователей:\n"
+
+    for item in response.json():
+        item_text = f"/{item.get('id')} {item.get('name')} {item.get('email')}\n"
+        message_text += item_text + "\n"
+
+    await message.answer(message_text, reply_markup = user_transaction_keyboard)
+    await state.set_state(FSM.transaction_user_choice)
+
+
+@dp.message(F.text == 'В главное меню', FSM.transaction_user_choice)
+async def get_user_transaction(message: types.Message, state: FSMContext):
+    await message.answer("Главное меню", reply_markup=main_keyboard)
+    await state.set_state(FSM.main_menu_next)
+
+
+@dp.message(F.text.startswith('/'), FSM.transaction_user_choice)
+async def get_user_transaction(message: types.Message, state: FSMContext):
+    user_id = message.text.strip('/')
+    url = f'http://127.0.0.1:8000/transaction/user/{user_id}'
+    response = s.get(url)
+
+    data = s.get('http://127.0.0.1:8000/user/profile').json()
+    email = data.get('email')
+    name = data.get('name')
+    message_text = f"Список транзакций {name} {email}\n"
+
+    for transaction in response.json():
+        item_text = f"/{transaction.get('id')}\n{transaction.get('item_id')}\n{transaction.get('type')}\n{transaction.get('cost')} руб\n" \
+                    f"{transaction.get('start_date')}\n{'Не завершена' if transaction.get('final_end_date') is None else transaction.get('final_end_date')}"
+        message_text += item_text + '\n'
+
+    if message_text == f"Список транзакций {name} {email}\n":
+        message_text = f"Пользователь {name} {email} не совершал транзакций"
+
+    await message.answer(message_text, reply_markup=main_keyboard)
+    await state.set_state(FSM.main_menu_next)
+
+
+@dp.message(F.text == 'Список моих транзакций', FSM.main_menu_next)
+async def get_cur_user_transaction(message: types.Message, state: FSMContext):
+    user_id = s.get('http://127.0.0.1:8000/user/profile').json().get('id')
+    url = f'http://127.0.0.1:8000/transaction/user/{user_id}'
+    response = s.get(url)
+    message_text = "Список транзакций:\n"
+
+    for transaction in response.json():
+        item_text = f"/{transaction.get('id')}\n{transaction.get('item_id')}\n{transaction.get('type')}\n{transaction.get('cost')} руб\n" \
+                    f"{transaction.get('start_date')}\n{'Не завершена' if transaction.get('final_end_date') is None else transaction.get('final_end_date')}"
+        message_text += item_text + '\n'
+
+    if message_text == "Список транзакций:\n":
+        data = s.get('http://127.0.0.1:8000/user/profile').json()
+        name = data.get('name')
+        message_text = f"{name}, вы не совершали транзакций"
+
+    await message.answer(message_text, reply_markup=main_keyboard)
+    await state.set_state(FSM.main_menu_next)
+
 
 
 async def main():

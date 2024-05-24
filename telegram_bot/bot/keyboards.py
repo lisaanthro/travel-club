@@ -10,18 +10,18 @@ def create_start_keyboard():
 
     return start_keyboard
 
-
 def create_main_keyboard():
     main_itembtn1 = types.KeyboardButton(text='Мой профиль')
-    main_itembtn2 = types.KeyboardButton(text='Список пользователей')
-    main_itembtn3 = types.KeyboardButton(text='Список снаряжения для аренды')
-    main_itembtn4 = types.KeyboardButton(text='История операций для сдачи снаряжения')
-    main_itembtn5 = types.KeyboardButton(text='В начало')
+    main_itembtn2 = types.KeyboardButton(text='Список снаряжения для аренды')
+    main_itembtn3 = types.KeyboardButton(text='Список моих транзакций')
+    main_itembtn4 = types.KeyboardButton(text='Список пользователей')
+    main_itembtn5 = types.KeyboardButton(text='Транзакции всех пользователей')
     main_keyboard = types.ReplyKeyboardMarkup(
-        keyboard=[[main_itembtn1], [main_itembtn2], [main_itembtn3], [main_itembtn4]],
+        keyboard=[[main_itembtn1], [main_itembtn2], [main_itembtn3], [main_itembtn4],[main_itembtn5]],
         resize_keyboard=True)
 
     return main_keyboard
+
 
 
 def create_profile_keyboard():
@@ -34,10 +34,11 @@ def create_profile_keyboard():
 
 
 def create_update_profile_keyboard():
-    update_profile_button1 = types.KeyboardButton(text='email')
-    update_profile_button2 = types.KeyboardButton(text='имя')
+    update_profile_button1 = types.KeyboardButton(text='Email')
+    update_profile_button2 = types.KeyboardButton(text='Имя')
+    update_profile_button3 = types.KeyboardButton(text='В главное меню')
     update_profile_keyboard = types.ReplyKeyboardMarkup(
-        keyboard=[[update_profile_button1], [update_profile_button2]], resize_keyboard=True)
+        keyboard=[[update_profile_button1], [update_profile_button2], [update_profile_button3]], resize_keyboard=True)
 
     return update_profile_keyboard
 
@@ -45,17 +46,21 @@ def create_update_profile_keyboard():
 def create_item_keyboard():
     item_keyboard_button1 = types.KeyboardButton(text='Добавить снаряжение')
     item_keyboard_button2 = types.KeyboardButton(text='Списать снаряжение')
+    item_keyboard_button3 = types.KeyboardButton(text='В главное меню')
     item_keyboard = types.ReplyKeyboardMarkup(
-        keyboard=[[item_keyboard_button1], [item_keyboard_button2]], resize_keyboard=True)
+        keyboard=[[item_keyboard_button1], [item_keyboard_button2], [item_keyboard_button3]], resize_keyboard=True)
 
     return item_keyboard
 
 
 def create_item_id_keyboard():
-    item_id_keyboard_button1 = types.KeyboardButton(text='Изменить')
-    item_id_keyboard_button2 = types.KeyboardButton(text='Посмотреть транзакции')
+    item_id_keyboard_button1 = types.KeyboardButton(text='Взять в аренду')
+    item_id_keyboard_button2 = types.KeyboardButton(text='Отдать в ремонт')
+    item_id_keyboard_button3 = types.KeyboardButton(text='Изменить')
+    item_id_keyboard_button4 = types.KeyboardButton(text='Посмотреть транзакции')
+    item_id_keyboard_button5 = types.KeyboardButton(text='В главное меню')
     item_id_keyboard = types.ReplyKeyboardMarkup(
-        keyboard=[[item_id_keyboard_button1], [item_id_keyboard_button2]], resize_keyboard=True)
+        keyboard=[[item_id_keyboard_button1], [item_id_keyboard_button2], [item_id_keyboard_button3], [item_id_keyboard_button4], [item_id_keyboard_button5]],resize_keyboard=True)
 
     return item_id_keyboard
 
@@ -67,11 +72,26 @@ def create_update_item_keyboard():
     update_item_button4 = types.KeyboardButton(text='Состояние')
     update_item_button5 = types.KeyboardButton(text='Цена')
     update_item_button6 = types.KeyboardButton(text='Фото')
+    update_item_button7 = types.KeyboardButton(text='В главное меню')
     update_item_keyboard = types.ReplyKeyboardMarkup(
         keyboard=[[update_item_button1], [update_item_button2], [update_item_button3],
-                  [update_item_button4], [update_item_button5], [update_item_button6]], resize_keyboard=True)
+                  [update_item_button4], [update_item_button5], [update_item_button6], [update_item_button7]], resize_keyboard=True)
 
     return update_item_keyboard
+
+def create_finish_transaction_keyboard():
+    finish_transaction_button1 = types.KeyboardButton(text='Завершить транзакцию')
+    finish_transaction_button2 = types.KeyboardButton(text='В главное меню')
+    finish_transaction_keyboard = types.ReplyKeyboardMarkup(keyboard = [[finish_transaction_button1], [finish_transaction_button2]], resize_keyboard=True)
+    return finish_transaction_keyboard
+
+
+def create_user_transaction_keyboard():
+    user_transaction_button1 = types.KeyboardButton(text='В главное меню')
+    user_transaction_keyboard = types.ReplyKeyboardMarkup(
+        keyboard=[[user_transaction_button1]], resize_keyboard=True)
+
+    return user_transaction_keyboard
 
 
 start_keyboard = create_start_keyboard()
@@ -81,3 +101,5 @@ update_profile_keyboard = create_update_profile_keyboard()
 item_keyboard = create_item_keyboard()
 item_id_keyboard = create_item_id_keyboard()
 update_item_keyboard = create_update_item_keyboard()
+finish_transaction_keyboard = create_finish_transaction_keyboard()
+user_transaction_keyboard = create_user_transaction_keyboard()
