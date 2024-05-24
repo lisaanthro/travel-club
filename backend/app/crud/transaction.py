@@ -6,8 +6,13 @@ from app.crud import get_item_by_id
 from app import models, schemas, errors
 
 
-def create_transaction(db: Session, transaction: schemas.TransactionCreateRequest,
-                       item: models.Item, user: models.User, transaction_type: str) -> models.Transaction:
+def create_transaction(
+    db: Session,
+    transaction: schemas.TransactionCreateRequest,
+    item: models.Item,
+    user: models.User,
+    transaction_type: str,
+) -> models.Transaction:
     if transaction_type not in ["rent", "repair"]:
         raise errors.TransactionTypeError()
 
@@ -29,7 +34,11 @@ def create_transaction(db: Session, transaction: schemas.TransactionCreateReques
 
 
 def get_transaction_by_id(db: Session, transaction_id: int) -> models.Transaction:
-    transaction = db.query(models.Transaction).filter(models.Transaction.id == transaction_id).first()
+    transaction = (
+        db.query(models.Transaction)
+        .filter(models.Transaction.id == transaction_id)
+        .first()
+    )
 
     return transaction
 
@@ -40,15 +49,24 @@ def get_all_transactions(db: Session) -> List[models.Transaction]:
     return transactions
 
 
-def update_transaction(db: Session, transaction_id: int,
-                       transaction_update: schemas.TransactionUpdateRequest) -> models.Transaction:
-    transaction = db.query(models.Transaction).filter(models.Transaction.id == transaction_id).first()
+def update_transaction(
+    db: Session,
+    transaction_id: int,
+    transaction_update: schemas.TransactionUpdateRequest,
+) -> models.Transaction:
+    transaction = (
+        db.query(models.Transaction)
+        .filter(models.Transaction.id == transaction_id)
+        .first()
+    )
 
     if transaction is None:
         raise errors.TransactionNonFound
 
     item = get_item_by_id(db, transaction.item_id)
-    transaction.cost = ((transaction_update.final_end_date - transaction.start_date).days + 1) * item.price
+    transaction.cost = (
+        (transaction_update.final_end_date - transaction.start_date).days + 1
+    ) * item.price
 
     for key, value in transaction_update.dict(exclude_unset=True).items():
         setattr(transaction, key, value)
@@ -60,12 +78,16 @@ def update_transaction(db: Session, transaction_id: int,
 
 
 def get_transactions_by_user_id(db: Session, user_id: int) -> List[models.Transaction]:
-    transactions = db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
+    transactions = (
+        db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
+    )
 
     return transactions
 
 
 def get_transactions_by_item_id(db: Session, item_id: int) -> List[models.Transaction]:
-    transactions = db.query(models.Transaction).filter(models.Transaction.item_id == item_id).all()
+    transactions = (
+        db.query(models.Transaction).filter(models.Transaction.item_id == item_id).all()
+    )
 
     return transactions

@@ -17,4 +17,6 @@ class Item(BaseSqlModel):
     price: Mapped[float] = mapped_column(Float)
     image: Mapped[str] = mapped_column(String)
 
-    transactions: Mapped[List['Transaction']] = relationship('Transaction', back_populates='item')
+    transactions: Mapped[List["Transaction"]] = relationship(
+        "Transaction", back_populates="item"
+    )

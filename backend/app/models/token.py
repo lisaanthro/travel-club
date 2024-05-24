@@ -6,10 +6,10 @@ from app.models import User
 
 
 class Token(BaseSqlModel):
-    __tablename__ = 'tokens'
+    __tablename__ = "tokens"
 
     value: Mapped[str] = mapped_column(String, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     is_alive: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    user: Mapped['User'] = relationship(back_populates='tokens')
+    user: Mapped["User"] = relationship(back_populates="tokens")

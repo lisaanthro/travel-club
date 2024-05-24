@@ -56,7 +56,9 @@ def read_user_by_token(db: Session, token: str) -> models.User:
     return user
 
 
-def update_user(db: Session, user_id: int, user_update: schemas.UserUpdateRequest) -> models.User:
+def update_user(
+    db: Session, user_id: int, user_update: schemas.UserUpdateRequest
+) -> models.User:
     user = db.query(models.User).filter(models.User.id == user_id).first()
 
     if user is None:

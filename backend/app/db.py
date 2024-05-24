@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import URL, DateTime, create_engine
+
 # from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import sessionmaker, Mapped, mapped_column
@@ -26,6 +27,9 @@ SessionLocal = sessionmaker(
     bind=engine,
 )
 
+
 class BaseSqlModel(DeclarativeBase):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )

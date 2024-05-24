@@ -13,9 +13,9 @@ user_router = APIRouter(
 
 
 @user_router.post(path="/register")
-def register_user(user: schemas.UserCreateRequest = Body(...),
-                  db: Session = Depends(get_db)
-                  ) -> schemas.Token:
+def register_user(
+    user: schemas.UserCreateRequest = Body(...), db: Session = Depends(get_db)
+) -> schemas.Token:
     try:
         db_user = crud.create_user(db, user)
     except errors.EmailAlreadyAssociatedError as e:
@@ -26,9 +26,9 @@ def register_user(user: schemas.UserCreateRequest = Body(...),
 
 
 @user_router.post(path="/login")
-def login_user(user: schemas.UserLoginRequest = Body(...),
-               db: Session = Depends(get_db)
-               ) -> schemas.Token:
+def login_user(
+    user: schemas.UserLoginRequest = Body(...), db: Session = Depends(get_db)
+) -> schemas.Token:
     try:
         db_user = crud.read_user_by_login(db, user)
     except errors.AuthenticationError as e:
@@ -39,9 +39,9 @@ def login_user(user: schemas.UserLoginRequest = Body(...),
 
 
 @user_router.get(path="/profile")
-def profile_user(user: models.User = Depends(current_user),
-                 db: Session = Depends(get_db)
-                 ) -> schemas.User:
+def profile_user(
+    user: models.User = Depends(current_user), db: Session = Depends(get_db)
+) -> schemas.User:
     return serializers.get_user(user)
 
 
@@ -53,11 +53,11 @@ def get_all_users(db: Session = Depends(get_db)) -> List[schemas.User]:
 
 
 @user_router.put(path="/{user_id}")
-def update_user(user_id: int,
-                user_update: schemas.UserUpdateRequest = Body(...),
-                db: Session = Depends(get_db)) -> schemas.User:
+def update_user(
+    user_id: int,
+    user_update: schemas.UserUpdateRequest = Body(...),
+    db: Session = Depends(get_db),
+) -> schemas.User:
     db_user = crud.update_user(db, user_id, user_update)
 
     return serializers.get_user(db_user)
-
-

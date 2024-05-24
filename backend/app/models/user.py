@@ -15,11 +15,12 @@ class User(BaseSqlModel):
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
-    transactions: Mapped[List['Transaction']] = relationship('Transaction', back_populates='user')
+    transactions: Mapped[List["Transaction"]] = relationship(
+        "Transaction", back_populates="user"
+    )
 
-    tokens: Mapped[list['Token']] = relationship(
-        cascade='all,delete-orphan',
-        back_populates='user'
+    tokens: Mapped[list["Token"]] = relationship(
+        cascade="all,delete-orphan", back_populates="user"
     )
 
     def set_password(self, password):

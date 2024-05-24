@@ -18,7 +18,9 @@ def get_item_by_id(db: Session, id: int) -> models.Item:
 #     return items
 
 
-def create_item(db: Session, item_create: schemas.ItemCreateRequest, is_superuser: bool) -> models.Item:
+def create_item(
+    db: Session, item_create: schemas.ItemCreateRequest, is_superuser: bool
+) -> models.Item:
     if not is_superuser:
         raise errors.PermissionDenied()
 
@@ -43,7 +45,9 @@ def create_item(db: Session, item_create: schemas.ItemCreateRequest, is_superuse
     return item
 
 
-def get_all_items_by_filter(db: Session, type: str, search_name: str) -> List[models.Item]:
+def get_all_items_by_filter(
+    db: Session, type: str, search_name: str
+) -> List[models.Item]:
     query = db.query(models.Item)
 
     if type:
@@ -56,7 +60,9 @@ def get_all_items_by_filter(db: Session, type: str, search_name: str) -> List[mo
     return items
 
 
-def update_item(db: Session, item_id: int, item_update: schemas.ItemUpdateRequest) -> models.Item:
+def update_item(
+    db: Session, item_id: int, item_update: schemas.ItemUpdateRequest
+) -> models.Item:
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
 
     if item is None:

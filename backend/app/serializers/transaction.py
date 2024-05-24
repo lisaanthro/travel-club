@@ -4,7 +4,9 @@ from app import schemas
 from app.models import transaction as db_model_transaction
 
 
-def get_transaction(db_transaction: db_model_transaction.Transaction) -> schemas.Transaction:
+def get_transaction(
+    db_transaction: db_model_transaction.Transaction,
+) -> schemas.Transaction:
     transaction = schemas.Transaction(
         id=db_transaction.id,
         item_id=db_transaction.item_id,
@@ -20,6 +22,10 @@ def get_transaction(db_transaction: db_model_transaction.Transaction) -> schemas
     return transaction
 
 
-def get_transactions(db_transactions: List[db_model_transaction.Transaction]) -> List[schemas.Transaction]:
-    transactions = [get_transaction(db_transaction) for db_transaction in db_transactions]
+def get_transactions(
+    db_transactions: List[db_model_transaction.Transaction],
+) -> List[schemas.Transaction]:
+    transactions = [
+        get_transaction(db_transaction) for db_transaction in db_transactions
+    ]
     return transactions
