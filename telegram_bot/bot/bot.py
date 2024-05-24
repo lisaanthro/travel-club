@@ -19,7 +19,6 @@ from aiogram.filters import StateFilter
 import requests
 import json
 
-import emoji
 import datetime
 
 s = requests.session()
@@ -63,7 +62,7 @@ class FSM(StatesGroup):
 @dp.message(Command('start'))
 async def cmd_start(message: types.Message, state: FSMContext):
     await message.answer(
-        'Привет, я - бот-помощник туристического клуба университета МИСИС. Помогаю арендовывать снаряжение. \nДля '
+        'Привет👋\nЯ - бот-помощник туристического клуба университета МИСИС. Помогаю арендовывать снаряжение. \nДля '
         'работы со мной необходимо войти в аккаунт или зарегистрироваться.\nДо встречи в аккаунте!',
         reply_markup=start_keyboard)
     await state.set_state(FSM.auth_next)
@@ -188,7 +187,7 @@ async def get_all_items(message: types.Message, state: FSMContext):
     # builder = InlineKeyboardBuilder()
     # builder.row(types.InlineKeyboardButton(text=city, url=link))
     # await message.answer('Перейдите по ссылке ниже:', reply_markup=builder.as_markup())
-    await message.answer(text = emoji.emojize(":tent:") + message_text, parse_mode="MarkdownV2", reply_markup=item_keyboard)
+    await message.answer(text = f'⛺ {message_text}', parse_mode="MarkdownV2", reply_markup=item_keyboard)
     await state.set_state(FSM.item_choice)
 
 
