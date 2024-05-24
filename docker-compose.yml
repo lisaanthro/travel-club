@@ -22,3 +22,10 @@ services:
     env_file:
       - ./backend/app/.env
 
+  bot:
+    build:
+      context: ./telegram_bot
+      dockerfile: Dockerfile
+    depends_on:
+      - app
+
