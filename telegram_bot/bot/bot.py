@@ -30,9 +30,11 @@ s = requests.session()
 BOT_TOKEN = config.bot_token.get_secret_value()
 
 bot = Bot(BOT_TOKEN)
-redis = Redis(host=redis_host, port=6379)
-storage = RedisStorage(redis=redis)
-dp = Dispatcher(storage=storage)
+# redis = Redis(host=redis_host, port=6379)
+# storage = RedisStorage(redis=redis)
+# dp = Dispatcher(storage=storage)
+
+dp = Dispatcher()
 
 
 class FSM(StatesGroup):
@@ -163,6 +165,9 @@ async def redirect_from_profile(message: types.Message, state: FSMContext):
 async def change_profile_input(message: types.Message, state: FSMContext):
     await message.answer(f"Введите {message.text}:", reply_markup=ReplyKeyboardRemove())
     await state.update_data(profile_update_type=message.text)
+
+    data = await state.get_data()
+    print(data.get('profile_update_type'), message.text)
     await state.set_state(FSM.request_change_profile_next)
 
 
@@ -176,7 +181,8 @@ async def to_main_menu(message: types.Message, state: FSMContext):
 async def request_change_profile(message: types.Message, state: FSMContext):
     data = await state.get_data()
     profile_update_type = data.get("profile_update_type")
-    payload = {"name" if profile_update_type == "имя" else "email": message.text}
+    print(profile_update_type)
+    payload = {"name" if profile_update_type == "Имя" else "email": message.text}
 
     user_id = s.get("https://gear.dino-misis.ru/user/profile").json().get("id")
     url = f"https://gear.dino-misis.ru/user/{user_id}"
@@ -200,9 +206,6 @@ async def get_all_items(message: types.Message, state: FSMContext):
         item_text = f"🔘 /{item.get('id')}\\ {item.get('name')}\\ *{item.get('type')}*\\ {item.get('price')} руб\n"
         message_text += item_text.replace(".", r"\.") + "\n"
 
-    # builder = InlineKeyboardBuilder()
-    # builder.row(types.InlineKeyboardButton(text=city, url=link))
-    # await message.answer('Перейдите по ссылке ниже:', reply_markup=builder.as_markup())
     await message.answer(
         text=f"⛺ {message_text}", parse_mode="MarkdownV2", reply_markup=item_keyboard
     )
@@ -486,7 +489,7 @@ async def request_item_create(message: types.Message, state: FSMContext):
     # TODO: validate that input consists of 5 values, separated by '\n', inventary_id and price are int
     name, inventary_id, item_type, condition, price = message.text.split("\n")
     inventary_id = int(inventary_id)
-    price = int(price)
+    price = float(price)
 
     payload = {
         "name": name,
@@ -605,10 +608,10 @@ async def get_user_transaction(message: types.Message, state: FSMContext):
     user_id = message.text.strip("/")
     url = f"https://gear.dino-misis.ru/transaction/user/{user_id}"
     response = s.get(url)
-
-    data = s.get("https://gear.dino-misis.ru/user/profile").json()
-    email = data.get("email")
-    name = data.get("name")
+    user = s.put(f"https://gear.dino-misis.ru/user/{user_id}", json={}).json()
+    print(user_id, user.get('email'))
+    email = user.get("email")
+    name = user.get("name")
     message_text = f"🗂 Список транзакций {name} {email}\n"
 
     for transaction in response.json():
