@@ -83,8 +83,8 @@ async def sigh_up(message: types.Message, state: FSMContext):
 
 @dp.message(F.text.contains('@'), FSM.sign_up_next)
 async def post_mail_name_password(message: types.Message, state: FSMContext):
-    # url = 'https://gear.dino-misis.ru/user/register'
-    url = 'http://127.0.0.1:8000/user/register'
+    url = 'https://gear.dino-misis.ru/user/register'
+    # url = 'http://127.0.0.1:8000/user/register'
     email, name, password = message.text.split()
     payload = {'email': email, 'name': name, 'password': password}
     response = s.post(url, json=payload)
@@ -102,8 +102,8 @@ async def post_mail_name_password(message: types.Message, state: FSMContext):
 
 @dp.message(F.text.contains('@'), FSM.sign_in_next)
 async def post_mail_password(message: types.Message, state: FSMContext):
-    # url = 'https://gear.dino-misis.ru/user/login'
-    url = 'http://127.0.0.1:8000/user/login'
+    url = 'https://gear.dino-misis.ru/user/login'
+    # url = 'http://127.0.0.1:8000/user/login'
     email, password = message.text.split()
     payload = {'email': email, 'password': password}
     response = s.post(url, json=payload)
@@ -125,8 +125,11 @@ async def post_mail_password(message: types.Message, state: FSMContext):
 
 @dp.message(F.text == 'Мой профиль', FSM.main_menu_next)
 async def get_my_profile(message: types.Message, state: FSMContext):
-    # data = requests.get('https://gear.dino-misis.ru/user/profile').json()
-    data = s.get('http://127.0.0.1:8000/user/profile').json()
+    data = s.get('https://gear.dino-misis.ru/user/profile')
+    print(data)
+    data = data.json()
+    print(data)
+    # data = s.get('http://127.0.0.1:8000/user/profile').json()
     email = data.get('email')
     name = data.get('name')
 
@@ -164,8 +167,8 @@ async def request_change_profile(message: types.Message, state: FSMContext):
     profile_update_type = data.get('profile_update_type')
     payload = {'name' if profile_update_type == 'имя' else 'email': message.text}
 
-    user_id = s.get('http://127.0.0.1:8000/user/profile').json().get('id')
-    url = f'http://127.0.0.1:8000/user/{user_id}'
+    user_id = s.get('https://gear.dino-misis.ru/user/profile').json().get('id')
+    url = f'https://gear.dino-misis.ru/user/{user_id}'
     response = s.put(url, json=payload)
     print(payload)
 
@@ -176,7 +179,7 @@ async def request_change_profile(message: types.Message, state: FSMContext):
 
 @dp.message(F.text == 'Список снаряжения для аренды', FSM.main_menu_next)
 async def get_all_items(message: types.Message, state: FSMContext):
-    url = 'http://127.0.0.1:8000/item'
+    url = 'https://gear.dino-misis.ru/item'
     response = s.get(url)
     message_text = "Список снаряжения:\n\n"
 
@@ -194,7 +197,7 @@ async def get_all_items(message: types.Message, state: FSMContext):
 @dp.message(F.text.startswith('/'), FSM.item_choice)
 async def get_item_by_id(message: types.Message, state: FSMContext):
     item_id = message.text.strip('/')
-    url = f'http://127.0.0.1:8000/item/{item_id}'
+    url = f'https://gear.dino-misis.ru/item/{item_id}'
 
     response = s.get(url)
     item = response.json()
@@ -247,7 +250,7 @@ async def change_item_by_id(message: types.Message, state: FSMContext):
 
 @dp.message(FSM.rent_next)
 async def create_transaction_by_id(message: types.Message, state: FSMContext):
-    url = 'http://127.0.0.1:8000/transaction/create/rent'
+    url = 'https://gear.dino-misis.ru/transaction/create/rent'
     str_pledge, planned_date = message.text.split()
     year, month, day = map(int, planned_date.split('.'))
     end_date = datetime.date(year, month, day)
@@ -283,7 +286,7 @@ async def change_item_by_id(message: types.Message, state: FSMContext):
 
 @dp.message(FSM.repair_next)
 async def create_transaction_by_id(message: types.Message, state: FSMContext):
-    url = 'http://127.0.0.1:8000/transaction/create/repair'
+    url = 'https://gear.dino-misis.ru/transaction/create/repair'
     str_pledge, planned_date = message.text.split()
     year, month, day = map(int, planned_date.split('.'))
     end_date = datetime.date(year, month, day)
@@ -385,7 +388,7 @@ async def request_change_item_by_id(message: types.Message, state: FSMContext):
         item_property = 'price'
 
     payload = {item_property: message.text}
-    url = f'http://127.0.0.1:8000/item/{item_id}'
+    url = f'https://gear.dino-misis.ru/item/{item_id}'
     response = s.put(url, json=payload)
 
     print(response)
@@ -400,7 +403,7 @@ async def get_transactions_by_item_id(message: types.Message, state: FSMContext)
     data = await state.get_data()
     item_id = data.get('current_item_id')
 
-    url = f'http://127.0.0.1:8000/transaction/item/{item_id}'
+    url = f'https://gear.dino-misis.ru/transaction/item/{item_id}'
     response = s.get(url)
     message_text = "Список транзакций:\n"
 
@@ -442,7 +445,7 @@ async def request_item_create(message: types.Message, state: FSMContext):
                "condition": condition,
                "price": price,
                "image": "string"}
-    url = 'http://127.0.0.1:8000/item/create'
+    url = 'https://gear.dino-misis.ru/item/create'
     response = s.post(url, json=payload)
     print(payload, response, str(response.content))
     print(response.json())
@@ -453,7 +456,7 @@ async def request_item_create(message: types.Message, state: FSMContext):
 
 @dp.message(F.text == 'Транзакции всех пользователей', FSM.main_menu_next)
 async def get_all_transactions(message: types.Message, state: FSMContext):
-    url = f'http://127.0.0.1:8000/transaction/'
+    url = f'https://gear.dino-misis.ru/transaction/'
     response = s.get(url)
     message_text = "Список транзакций:\n"
 
@@ -475,7 +478,7 @@ async def to_main_menu(message: types.Message, state: FSMContext):
 @dp.message(F.text.startswith('/'), FSM.get_item_info_for_return_next)
 async def get_transaction_by_id(message: types.Message, state: FSMContext):
     transaction_id = message.text.strip('/')
-    url = f'http://127.0.0.1:8000/transaction/{transaction_id}'
+    url = f'https://gear.dino-misis.ru/transaction/{transaction_id}'
     message_text = f"Транзакция №{transaction_id}\n"
     response = s.get(url)
     transaction = response.json()
@@ -492,7 +495,7 @@ async def get_transaction_by_id(message: types.Message, state: FSMContext):
 async def get_transaction_by_id(message: types.Message, state: FSMContext):
     data = await state.get_data()
     transaction_id = int(data.get('current_transaction_id'))
-    url = f'http://127.0.0.1:8000/transaction/{transaction_id}'
+    url = f'https://gear.dino-misis.ru/transaction/{transaction_id}'
     today = datetime.date.today()
     str_today = str(today)
 
@@ -517,7 +520,7 @@ async def to_main_menu(message: types.Message, state: FSMContext):
 
 @dp.message(F.text == 'Список пользователей', FSM.main_menu_next)
 async def get_all_users(message: types.Message, state: FSMContext):
-    url = 'http://127.0.0.1:8000/user/get_all'
+    url = 'https://gear.dino-misis.ru/user/get_all'
     response = s.get(url)
     message_text = "Список пользователей:\n"
 
@@ -538,10 +541,10 @@ async def get_user_transaction(message: types.Message, state: FSMContext):
 @dp.message(F.text.startswith('/'), FSM.transaction_user_choice)
 async def get_user_transaction(message: types.Message, state: FSMContext):
     user_id = message.text.strip('/')
-    url = f'http://127.0.0.1:8000/transaction/user/{user_id}'
+    url = f'https://gear.dino-misis.ru/transaction/user/{user_id}'
     response = s.get(url)
 
-    data = s.get('http://127.0.0.1:8000/user/profile').json()
+    data = s.get('https://gear.dino-misis.ru/user/profile').json()
     email = data.get('email')
     name = data.get('name')
     message_text = f"Список транзакций {name} {email}\n"
@@ -560,8 +563,8 @@ async def get_user_transaction(message: types.Message, state: FSMContext):
 
 @dp.message(F.text == 'Список моих транзакций', FSM.main_menu_next)
 async def get_cur_user_transaction(message: types.Message, state: FSMContext):
-    user_id = s.get('http://127.0.0.1:8000/user/profile').json().get('id')
-    url = f'http://127.0.0.1:8000/transaction/user/{user_id}'
+    user_id = s.get('https://gear.dino-misis.ru/user/profile').json().get('id')
+    url = f'https://gear.dino-misis.ru/transaction/user/{user_id}'
     response = s.get(url)
     message_text = "Список транзакций:\n"
 
@@ -571,7 +574,7 @@ async def get_cur_user_transaction(message: types.Message, state: FSMContext):
         message_text += item_text + '\n'
 
     if message_text == "Список транзакций:\n":
-        data = s.get('http://127.0.0.1:8000/user/profile').json()
+        data = s.get('https://gear.dino-misis.ru/user/profile').json()
         name = data.get('name')
         message_text = f"{name}, вы не совершали транзакций"
 
