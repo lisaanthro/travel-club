@@ -24,7 +24,7 @@
 ### [Ссылка на Telegram bot](https://t.me/travel_misis_bot)
 
 ## Стек приложения
-Python, FastApi, SQLAlchemy, Redis, Docker
+Python, FastApi, SQLAlchemy, Redis, Docker, Postgres, Aiogram, Black
 
 ## Команда
 Пластинина Елизавета
