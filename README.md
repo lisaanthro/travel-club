@@ -29,10 +29,6 @@ Python, FastApi, SQLAlchemy, Redis, Docker, Postgres, Aiogram, Black
 ## Команда
 Пластинина Елизавета
 
-Ильин Иван
-
-Князева Софья
-
 Горячева Екатерина
 
 Николина Варвара
